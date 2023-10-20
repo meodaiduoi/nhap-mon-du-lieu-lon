@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  mongo1:
+    container_name: mongo1
+    image: mongo:4.4
+    volumes:
+      - ./scripts/rs-init.sh:/scripts/rs-init.sh
+      - ./scripts/init.js:/scripts/init.js
+      - ./data/mongo1:/data/db 
+    networks:
+      - mongo-network
+    expose:
+      - 27017
+    ports:
+      - 27017:27017
+    depends_on:
+      - mongo2
+      - mongo3
+    links:
+      - mongo2
+      - mongo3
+    restart: always
+    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "dbrs" ]
+
+  mongo2:
+    container_name: mongo2
+    image: mongo:4.4
+    volumes:
+      - ./data/mongo2:/data/db 
+    networks:
+      - mongo-network
+    ports:
+      - 27018:27017
+    restart: always
+    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "dbrs" ]
+
+  mongo3:
+    container_name: mongo3
+    image: mongo:4.4
+    volumes:
+      - ./data/mongo3:/data/db 
+    networks:
+      - mongo-network
+    expose:
+      - 27019
+    ports:
+      - 27019:27017
+    restart: always
+    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "dbrs" ]
+
+  # mongo4:
+  #   container_name: mongo4
+  #   image: mongo:4.4
+  #   volumes:
+  #     - ./data/mongo4:/data/db 
+  #   networks:
+  #     - mongo-network
+  #   expose:
+  #     - 27020
+  #   ports:
+  #     - 27020:27017
+  #   restart: always
+  #   entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "dbrs" ]
+
+networks:
+  mongo-network:
+    driver: bridge

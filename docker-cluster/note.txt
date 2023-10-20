@@ -1,0 +1,245 @@
+https://www.sohamkamani.com/docker/mongo-replica-set/
+hadoop: https://github.com/Marcel-Jan/docker-hadoop-spark
+
+Namenode: http://0.0.0.0:50070/dfshealth.html#tab-datanode
+Datanode1: http://0.0.0.0:50075/datanode.html#tab-overview
+Datanode2: http://0.0.0.0:50076/datanode.html#tab-overview
+Datanode3: http://0.0.0.0:50077/datanode.html#tab-overview
+
+Spark master: http://0.0.0.0:8080/
+Spark worker: http://0.0.0.0:8081/
+Spark notebook http://0.0.0.0:9001
+
+Mo shell trong docker namenode:
+docker exec -it namenode bash
+(Truy cap bang bash xong thi ko can phai su dung tien to: docker exec -it namenode nua)
+
+Try cap vao namenode container: docker exec -it namenode <cmd>
+
+Tao thu muc test
+docker exec -it namenode hadoop fs -mkdir /test
+xem cac thu muc dc tao o: /
+docker exec -it namenode hadoop fs -ls /
+xoa thu muc test
+hadoop fs -rm -r /test
+Xoa file voi duong dan
+hadoop fs -rm /path/.../file
+doc file vua upload 
+hadoop fs -cat /test/data.txt
+
+Uploadfile: 
+hadoop fs -put &ltsource&gt &ltdestination&gt (them -f de overide)
+Downloadfile:
+hadoop fs -get &ltsource&gt &ltdestination&gt 
+hadoop fs -cat <filepath>
+
+khoi dong docker: docker compose up
+check container nao dang chay: docker ps
+dung tat ca cac container: docker stop $(docker ps -a -q)
+
+TF-IDF
+*data tf-idf đã được mount sẵn tại vị trí trong container của hadoop namenode tại /home/testdata/
+
+- chay:
+hadoop jar hadoop-streaming-2.8.0.jar -input /input/* -output /results/step_1 -mapper 1_wordcount_mapper.py -reducer 1_wordcount_reducer.py
+
+- download file ve home/testdata
+hadoop fs -get /results/step_1/part-00000 /home/testdata/result.txt
+
+- reset lan chay
+hadoop fs -rm -r /results
+
+Tat 1 node:
+  b1: chay "docker ps" de lay output "NAMES" cua cac container
+  docker ps 
+  b2: tat container ma minh muon tat tu output name
+  docker stop <NAME> 
+  b3: check container da tat "docker ps"
+
+Xoa tat ca he thong factory reset
+  b1:      
+  docker system prune -a
+  b2:
+  Xoa cac thu muc "data" duoi quyen sudo
+  sudo rm -R data/
+
+Mongodb:
+mongodb: https://blog.devgenius.io/how-to-deploy-a-mongodb-replicaset-using-docker-compose-a538100db471
+show db: 
+show dbs
+
+ket noi cac cluster
+docker exec -it mongo1 mongo
+config = {
+    "_id": "dbrs",
+    "version": 1,
+    "members": [
+        {
+            "_id": 1,
+            "host": "mongo1:27017",
+            "priority": 2
+        },
+        {
+            "_id": 2,
+            "host": "mongo2:27017",
+            "priority": 1
+        },
+        {
+            "_id": 3,
+            "host": "mongo3:27017",
+            "priority": 1
+        }
+    ]
+};
+rs.initiate(config, { force: true });
+
+check status cac cluster:
+dbrs:PRIMARY> rs.status()
+{
+        "set" : "dbrs",
+        "date" : ISODate("2023-09-27T14:38:00.652Z"),
+        "myState" : 1,
+        "term" : NumberLong(1),
+        "syncSourceHost" : "",
+        "syncSourceId" : -1,
+        "heartbeatIntervalMillis" : NumberLong(2000),
+        "majorityVoteCount" : 2,
+        "writeMajorityCount" : 2,
+        "votingMembersCount" : 3,
+        "writableVotingMembersCount" : 3,
+        "optimes" : {
+                "lastCommittedOpTime" : {
+                        "ts" : Timestamp(1695825474, 3),
+                        "t" : NumberLong(1)
+                },
+                "lastCommittedWallTime" : ISODate("2023-09-27T14:37:54.922Z"),
+                "readConcernMajorityOpTime" : {
+                        "ts" : Timestamp(1695825474, 3),
+                        "t" : NumberLong(1)
+                },
+                "readConcernMajorityWallTime" : ISODate("2023-09-27T14:37:54.922Z"),
+                "appliedOpTime" : {
+                        "ts" : Timestamp(1695825474, 3),
+                        "t" : NumberLong(1)
+                },
+                "durableOpTime" : {
+                        "ts" : Timestamp(1695825474, 3),
+                        "t" : NumberLong(1)
+                },
+                "lastAppliedWallTime" : ISODate("2023-09-27T14:37:54.922Z"),
+                "lastDurableWallTime" : ISODate("2023-09-27T14:37:54.922Z")
+        },
+        "lastStableRecoveryTimestamp" : Timestamp(1695825430, 1),
+        "electionCandidateMetrics" : {
+                "lastElectionReason" : "electionTimeout",
+                "lastElectionDate" : ISODate("2023-09-27T14:34:10.706Z"),
+                "electionTerm" : NumberLong(1),
+                "lastCommittedOpTimeAtElection" : {
+                        "ts" : Timestamp(0, 0),
+                        "t" : NumberLong(-1)
+                },
+                "lastSeenOpTimeAtElection" : {
+                        "ts" : Timestamp(1695825239, 1),
+                        "t" : NumberLong(-1)
+                },
+                "numVotesNeeded" : 2,
+                "priorityAtElection" : 2,
+                "electionTimeoutMillis" : NumberLong(10000),
+                "numCatchUpOps" : NumberLong(0),
+                "newTermStartDate" : ISODate("2023-09-27T14:34:10.748Z"),
+                "wMajorityWriteAvailabilityDate" : ISODate("2023-09-27T14:34:11.436Z")
+        },
+        "members" : [
+                {
+                        "_id" : 1,
+                        "name" : "mongo1:27017",
+                        "health" : 1,
+                        "state" : 1,
+                        "stateStr" : "PRIMARY",
+                        "uptime" : 606,
+                        "optime" : {
+                                "ts" : Timestamp(1695825474, 3),
+                                "t" : NumberLong(1)
+                        },
+                        "optimeDate" : ISODate("2023-09-27T14:37:54Z"),
+                        "lastAppliedWallTime" : ISODate("2023-09-27T14:37:54.922Z"),
+                        "lastDurableWallTime" : ISODate("2023-09-27T14:37:54.922Z"),
+                        "syncSourceHost" : "",
+                        "syncSourceId" : -1,
+                        "infoMessage" : "",
+                        "electionTime" : Timestamp(1695825250, 1),
+                        "electionDate" : ISODate("2023-09-27T14:34:10Z"),
+                        "configVersion" : 1,
+                        "configTerm" : 1,
+                        "self" : true,
+                        "lastHeartbeatMessage" : ""
+                },
+                {
+                        "_id" : 2,
+                        "name" : "mongo2:27017",
+                        "health" : 1,
+                        "state" : 2,
+                        "stateStr" : "SECONDARY",
+                        "uptime" : 240,
+                        "optime" : {
+                                "ts" : Timestamp(1695825474, 3),
+                                "t" : NumberLong(1)
+                        },
+                        "optimeDurable" : {
+                                "ts" : Timestamp(1695825474, 3),
+                                "t" : NumberLong(1)
+                        },
+                        "optimeDate" : ISODate("2023-09-27T14:37:54Z"),
+                        "optimeDurableDate" : ISODate("2023-09-27T14:37:54Z"),
+                        "lastAppliedWallTime" : ISODate("2023-09-27T14:37:54.922Z"),
+                        "lastDurableWallTime" : ISODate("2023-09-27T14:37:54.922Z"),
+                        "lastHeartbeat" : ISODate("2023-09-27T14:37:58.806Z"),
+                        "lastHeartbeatRecv" : ISODate("2023-09-27T14:37:59.796Z"),
+                        "pingMs" : NumberLong(0),
+                        "lastHeartbeatMessage" : "",
+                        "syncSourceHost" : "mongo1:27017",
+                        "syncSourceId" : 1,
+                        "infoMessage" : "",
+                        "configVersion" : 1,
+                        "configTerm" : 1
+                },
+                {
+                        "_id" : 3,
+                        "name" : "mongo3:27017",
+                        "health" : 1,
+                        "state" : 2,
+                        "stateStr" : "SECONDARY",
+                        "uptime" : 240,
+                        "optime" : {
+                                "ts" : Timestamp(1695825474, 3),
+                                "t" : NumberLong(1)
+                        },
+                        "optimeDurable" : {
+                                "ts" : Timestamp(1695825474, 3),
+                                "t" : NumberLong(1)
+                        },
+                        "optimeDate" : ISODate("2023-09-27T14:37:54Z"),
+                        "optimeDurableDate" : ISODate("2023-09-27T14:37:54Z"),
+                        "lastAppliedWallTime" : ISODate("2023-09-27T14:37:54.922Z"),
+                        "lastDurableWallTime" : ISODate("2023-09-27T14:37:54.922Z"),
+                        "lastHeartbeat" : ISODate("2023-09-27T14:37:58.806Z"),
+                        "lastHeartbeatRecv" : ISODate("2023-09-27T14:37:59.796Z"),
+                        "pingMs" : NumberLong(0),
+                        "lastHeartbeatMessage" : "",
+                        "syncSourceHost" : "mongo1:27017",
+                        "syncSourceId" : 1,
+                        "infoMessage" : "",
+                        "configVersion" : 1,
+                        "configTerm" : 1
+                }
+        ],
+        "ok" : 1,
+        "$clusterTime" : {
+                "clusterTime" : Timestamp(1695825474, 3),
+                "signature" : {
+                        "hash" : BinData(0,"AAAAAAAAAAAAAAAAAAAAAAAAAAA="),
+                        "keyId" : NumberLong(0)
+                }
+        },
+        "operationTime" : Timestamp(1695825474, 3)
+}
